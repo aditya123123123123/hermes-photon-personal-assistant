@@ -14,7 +14,7 @@ PYTHONPATH="$SCRATCH/hermes-main" \
   --basetemp="$SCRATCH/photon-pytest"
 ```
 
-Latest full execution: **106 passed, 1 xfailed in 27.61s**; exit 0.
+Latest full execution: **143 passed, 1 xfailed in 28.31s** on the pinned main revision; **143 passed, 1 xfailed in 35.99s** on tag `v0.22.2`; both exit 0. Both emit 98 host `re.split` deprecation warnings under Python 3.14.7. Run with `PYTHONDONTWRITEBYTECODE=1` and `-p no:cacheprovider` to avoid repository caches. Doctor maximum measured cyclomatic complexity is 12 (limit 20).
 The strict xfail is `test_required_direct_visibility_on_stock_upstream`: an actual unmet requirement, not parity.
 
 The canonical host runner was inspected but not invoked: it replaces the environment with `env -i`, dropping `HERMES_HOME`/`TMPDIR`/our upstream `PYTHONPATH`, and precompiles the entire upstream checkout. The expressly permitted dedicated-venv alternative preserves the task's state boundaries. No production interpreter dependencies were installed or changed. This is the plugin suite, not the full upstream suite.
@@ -29,9 +29,14 @@ git diff --check
 
 Radon emitted no D-or-higher blocks (CC > 20); patch applicability check passed. The patch was not applied to a checkout. Its actual tool-assembly behavior is separately exercised in memory by `test_proposed_generic_patch_real_assembly`.
 
+## Final plugin validator
+
+`hermes plugins validate` exits 0: manifest/floor/schema/env/loadability/dependencies, isolated registration, declared tools/hooks/middleware, collisions, security scan and **no core override** all pass. The old tool/hook registration mismatches are gone. Remaining output is the documented private-core-import warning and in-process-only/CLI host-isolation notes; see compatibility.md. This does not establish catalog rule 9 or rule 15 compliance.
+
 ## Coverage boundaries
 
-- Real PluginManager directory discovery, isolated unrelated-cwd install, preserved stock CLI/platform metadata, disabled dependency.
+- Real PluginManager directory discovery, isolated unrelated-cwd install including `assistant doctor --json`, preserved stock CLI/platform metadata, disabled dependency, namespaced bundled skill registration.
+- Offline doctor branches: version, isolation, enabled plugins, credential presence/redaction, capability consent, automatic host-fix visibility detection, reasoning overrides, calendar prerequisites, owner resolution, bubbles, JSON/exit status, corrupt config and no-write/nonexistent-profile checks.
 - Real model_tools/tool_search classification: stock deferral, unsafe global-search-disable exposure, generic patch's direct Photon-only surface.
 - Exact reaction description, arbitrary emoji forwarding, missing message, wrong platform and ungranted consent failures.
 - Event prompt/skills and authorization, groups/unknown/missing sender; registered hook DM/cron/child/kanban/session mismatch gates.

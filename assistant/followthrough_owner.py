@@ -27,9 +27,13 @@ def workflow_owner() -> str:
         raise ValueError("Invalid profile-local photon_followthrough selection")
     from .settings import setting
     selected = config.get("owner", setting("owner", "auto"))
+    return resolve_owner(selected, get_hermes_home())
+
+
+def resolve_owner(selected, home):
+    """Resolve selection without configuration bootstrap or filesystem writes."""
     if selected not in OWNERS:
         raise ValueError("Unknown profile-local follow-through owner")
-    home = get_hermes_home()
     legacy = (home / "scripts" / "messages_followthrough.py").exists()
     # Installed skill instructions also establish an existing workflow. Merely
     # shipping this plugin must not silently supersede them.

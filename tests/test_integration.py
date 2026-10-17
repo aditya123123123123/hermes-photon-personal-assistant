@@ -47,6 +47,9 @@ def test_real_discovery_adapter_and_deferred_fallback(installed):
     assert entry.adapter_factory.__name__ == "PersonalAssistantPhotonAdapter"
     assert issubclass(entry.adapter_factory, PhotonAdapter)
     assert "assistant" in installed._cli_commands
+    skill = installed.find_plugin_skill("photon-personal-assistant:texting-assistant")
+    assert skill.resolve() == ROOT / "skills/texting-assistant/SKILL.md"
+    assert not (Path(os.environ["HERMES_HOME"]) / "skills/texting-assistant").exists()
     from plugins.platforms.photon import cli
     assert installed._cli_commands["photon"]["setup_fn"] is cli.register_cli
     raw = surface("photon", raw=True)
@@ -102,11 +105,16 @@ def test_disabling_tool_search_alone_is_not_a_safe_workaround(installed):
     assert "photon_react" in names(surface("telegram"))
 
 
-def test_missing_dependency_registers_nothing(installed):
+def test_missing_dependency_keeps_diagnostics_and_gated_declarations(installed):
     home = Path(os.environ["HERMES_HOME"])
     (home / "config.yaml").write_text(yaml.safe_dump({"plugins": {
         "enabled": ["photon-personal-assistant"], "disabled": ["photon-platform"]}}))
     installed.discover_and_load(force=True)
     from tools.registry import registry
-    assert registry.get_entry("photon_react", scope=installed.scope_key) is None
-    assert "assistant" not in installed._cli_commands
+    entry = registry.get_entry("photon_react", scope=installed.scope_key)
+    assert entry is not None
+    assert "assistant" in installed._cli_commands
+    import asyncio
+    assert "missing or disabled" in asyncio.run(entry.handler({"emoji": "👍"}))
+    from hermes_cli.plugins import invoke_hook
+    assert not invoke_hook("pre_llm_call", platform="photon", session_id="test", user_message="test")

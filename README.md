@@ -2,7 +2,9 @@
 
 A standalone Hermes user plugin for natural iMessage replies and approval-gated personal follow-through, inspired by texting-first assistants. MIT licensed; no core files are edited or monkeypatched by the plugin.
 
-**Compatibility:** tested against upstream Hermes commit `963b4e7d5029e8520657a6bf3c8fecb883b7d648`, Python 3.14.7, macOS. This is an experimental local package, not a published release. Re-run the contracts when updating Hermes.
+**Compatibility:** requires Hermes >=0.22.2; tested against that release and upstream commit `963b4e7d5029e8520657a6bf3c8fecb883b7d648`, Python 3.14.7, macOS. Re-run the contracts when updating Hermes. This checkout has not been published or admitted to the catalog.
+
+Start with the step-by-step [setup guide](SETUP.md), then run `hermes assistant doctor`. Review [disclosures and catalog eligibility](DISCLOSURES.md) before installing.
 
 **Known release blocker:** stock upstream defers `photon_react` behind `tool_search` / `tool_describe` / `tool_call`. The plugin works with that fallback, but does **not** deliver spontaneous directly-visible reactions on stock upstream. `upstream-patches/0001-platform-tools-direct.patch` is an optional, generic, **unapplied** proposal with an executable assembly test. It makes registered platforms' own toolsets direct and session-scoped. Do not claim complete behavioral parity until the host supplies that contract. See [compatibility notes](docs/compatibility.md).
 
@@ -37,7 +39,7 @@ hermes plugins enable photon-personal-assistant
 
 Review/approve the declared `gateway.platform_actions` capability through Hermes' plugin consent flow if reactions are desired. Without the grant, reaction execution returns an error. The plugin never self-grants consent. Activate through a normal operator-controlled gateway restart and a fresh conversation; do not hot-reload prompts into an ongoing conversation. This package's build/tests did **not** enable anything in a production profile or restart a gateway.
 
-If `photon-platform` is missing or explicitly disabled, registration logs once per discovery and returns without adding assistant tools, hooks, commands or a platform replacement.
+If `photon-platform` is missing or explicitly disabled, no platform replacement is installed. Diagnostic CLI, skill, tool and hook declarations remain registered so validation is accurate and setup is diagnosable; runtime handlers refuse or return no context without Photon.
 
 ## Configuration
 
@@ -66,7 +68,7 @@ plugins:
 
 Legacy `plugins.entries.<id>.config` settings are accepted. A trusted `photon_followthrough.owner` value, if present, takes precedence over the plugin owner setting. Owner selection is not inferred from messages. Guarded local owner selection retains the branch's legacy config key for compatibility; it requires a genuine local operator TTY and quiescent work. No migration/cancellation happens implicitly.
 
-Configured Photon `channel_prompts` and `channel_skill_bindings` / channel skills remain in the normal Photon platform config and are resolved by Hermes' existing helpers. There is no bundled private skill or personal prompt.
+Configured Photon `channel_prompts` and `channel_skill_bindings` / channel skills remain in the normal Photon platform config and are resolved by Hermes' existing helpers. The bundled namespaced `texting-assistant` skill contains only generic style guidance, not a private skill or personal prompt.
 
 ### Calendar
 
@@ -95,7 +97,7 @@ An accepted reminder creates one one-shot cron job with an exact Photon destinat
 
 Plugin-owned data lives at `get_hermes_home()/photon-personal-assistant/store.json` (atomic JSON plus an interprocess lock). Cron jobs remain in Hermes' standard profile-local cron store. No top-level `cron`, `photon_assistant`, or `hermes_calendar` packages are installed. No code is injected into `cron/suggestions.py`.
 
-The source installation's legacy `cron/suggestions.json` was checked and **did not exist**, so no migration was needed. This plugin never imports or migrates a legacy suggestions file automatically. If one exists in another installation, reconcile explicitly before cutover.
+This plugin never imports or migrates a legacy `cron/suggestions.json` file automatically. If one exists in another installation, reconcile explicitly before cutover.
 
 ## Testing
 

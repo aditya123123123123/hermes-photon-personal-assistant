@@ -1,6 +1,6 @@
 # Host integration boundaries
 
-Tested host: `963b4e7d5029e8520657a6bf3c8fecb883b7d648`.
+Tested hosts: upstream `963b4e7d5029e8520657a6bf3c8fecb883b7d648` and tag `v0.22.2` (peeled commit `d923a5eb487a17c0a68801bba9ef0f56c81040a8`). Both expose `ctx.register_skill`; the manifest supports and declares `requires_hermes: ">=0.22.2"`.
 
 ## Runtime mode
 
@@ -28,6 +28,35 @@ The public `ctx.platform_actions` facade currently implements reactions for Tele
 
 The gateway authorizes human turns before invoking hooks. Adapter guidance/observation additionally checks its installed authorization callback. Hook recall requires exact platform/DM/sender/session context and rejects cron/delegation/kanban. Like any plugin in a trusted Python process, it does not attempt to make forged in-process context into a separate security sandbox.
 
+## Diagnostics and public API use
+
+Tool registration, hooks, CLI, platform registration and skill bundling use public `ctx.register_*` APIs. The registered reaction wrapper now uses `ctx.has_capability()` and the hook/tool handlers use `ctx.has_plugin()`. An isolated validator lacks Photon, so the old registration-time early return falsely disagreed with `provides_tools`/`provides_hooks`; declarations are now unconditional and execution remains gated. This does not make reactions globally executable.
+
+Doctor deliberately does not call `load_config_readonly`: on a cold cache that host function creates directories/backups. It parses the selected profile YAML without bootstrap and applies the existing environment expansion/managed overlay. Credential presence uses the documented scoped secret accessor; it never reads `.env` itself. There are no online or child-calendar probes. CLI host bootstrap is separate and may write host metadata before dispatch.
+
+### Remaining private-core imports and reasons
+
+These are version-sensitive and remain validator warnings, not promises of a supported API. No core module is rebound or monkeypatched. Import sites are listed by module/function rather than unstable line numbers; the validator reports current file:line locations.
+
+| Import | Sites | Why retained / upstream seam needed |
+| --- | --- | --- |
+| `plugins.platforms.photon.adapter.register`, `PhotonAdapter` | `__init__.py`, `assistant/adapter.py` | Preserve bundled metadata/transport while adding bubbles and event guidance; no public adapter decorator seam. Rule 15 concern remains. |
+| `hermes_cli.config_read_errors.FailedConfigRead` | `assistant/calendar/configured.py` | Reject recovered/broken policy instead of treating last-known-good approval as fresh consent. |
+| `gateway.session_context.get_session_env` | commitments, owner, personal_assistant, reaction_tool | Exact current event/DM/session identity also in standalone CLI children; context object is unavailable there. |
+| `cron.jobs.parse_duration`, `list_jobs`, `load_jobs`, `remove_job` | commitments, coordinator, owner, store | Existing job semantics, exact readback, quiescent-owner gate and cancellation; do not duplicate a scheduler or change job formats. |
+| `cron.scheduler.create_job_with_scheduler_registration`, `cron.scheduler_provider.resolve_cron_scheduler` | store | Bind durable jobs to the actual scheduler and its unregister operation, not merely JSON persistence. |
+| `hermes_cli.plugins_manifest.running_hermes_version`, `version_satisfies` | doctor | Same host version identity and floor semantics; unknown identity is explicitly failed. |
+| `hermes_cli.config._expand_env_vars`, `hermes_cli.managed_scope.apply_managed_overlay` | doctor | Honor active config semantics without the mutating normal loader; request a true no-write public config reader upstream. |
+| `hermes_constants.__file__` | doctor | Locate the running host's bundled adapter without loading it or querying the sidecar. |
+| `tools.tool_search.is_deferrable_tool_name` | doctor | Required host-owned runtime detection automatically recognizes the direct-visibility fix. |
+| `hermes_cli.plugin_capabilities.plugin_capability_granted` | doctor, reaction_tool | Doctor passes already-read config to avoid bootstrap; direct handler tests/standalone calls retain a fail-closed consent check. Registered runtime wrapper uses public `ctx.has_capability`. |
+| `hermes_cli.active_sessions._FileLock` | owner, store | Host-compatible interprocess locking for atomic owner/data operations; no equivalent context API in standalone CLI. |
+| `hermes_cli.config._write_user_config` | owner | Preserve host-safe config writing in the guarded operator command; never used by doctor. |
+| `hermes_time.now`, `get_timezone_name` | detector, store | Preserve configured timezone and host-relative-time behavior for saved records. |
+| `agent.delegation_context.is_delegated_child_process_context`, `owned_kanban_task` | personal_assistant | Fail closed for delegated/kanban invocations even if an apparent Photon binding exists. |
+
+The Google provider also imports the bundled Workspace script by its skill path, a version-sensitive integration rather than a new credential client. `ctx.platform_actions` currently lacks Photon reactions, so using it would not preserve behavior. These seams should be upstreamed, not disguised or silenced.
+
 ## Other differences
 
 - CLI namespace changes from `hermes photon commitment` to `hermes assistant commitment`.
@@ -35,4 +64,4 @@ The gateway authorizes human turns before invoking hooks. Adapter guidance/obser
 - Settings move to manifest-backed plugin settings; legacy owner/calendar configuration remains compatible.
 - Reaction calls require explicit plugin capability consent and a triggering/exact message ID.
 - Bubble splitting remains a soft boundary; an unbreakable word can exceed the configured limit. A delivered bubble without a returned ID is still counted as delivered for suffix retry. Non-bubble partial sends defer to the base resume method.
-- No live transport/provider, production deployment, or full upstream test suite was exercised. Tests use synthetic envelopes/accounts; compatibility outside the pinned revision is not claimed.
+- No live transport/provider, production deployment, or full upstream test suite was exercised. Tests use synthetic envelopes/accounts; compatibility outside the two tested revisions is not claimed.

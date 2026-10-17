@@ -1,0 +1,22 @@
+# DRAFT ONLY: repository is not published; replace the SHA after review.
+name: photon-personal-assistant
+repo: https://github.com/aditya123123123123/hermes-photon-personal-assistant
+sha: TODO_REPLACE_WITH_REVIEWED_40_HEX_COMMIT
+version: "0.1.0"
+description: Natural Photon replies and approval-gated personal follow-through.
+maintainer: aditya123123123123
+category: platform
+tier: community
+requires_hermes: ">=0.22.2"
+known_issues:
+  - Requires Photon set up first.
+  - Stock tool search defers reactions; upstream PR TODO.
+  - Stock Photon per-chat reasoning_effort is ignored; upstream PR TODO.
+  - Large state.db media cleanup can delay photo replies; upstream PR TODO.
+  - Rule 15 review required because the bundled Photon adapter is subclassed and re-registered.
+capabilities:
+  provides_tools: [photon_react]
+  provides_hooks: [pre_llm_call]
+  provides_middleware: []
+  requires_env: []
+# Host consent capability (manifest, not a CatalogCapabilities schema field): gateway.platform_actions

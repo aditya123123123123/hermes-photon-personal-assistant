@@ -29,3 +29,11 @@ print(json.dumps({'adapter': entry.adapter_factory.__name__, 'cli': 'assistant' 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout.splitlines()[-1])
     assert payload == {"adapter": "PersonalAssistantPhotonAdapter", "cli": True}
+
+    cli_env = {**os.environ, "PYTHONPATH": str(upstream), "PYTHONDONTWRITEBYTECODE": "1"}
+    result = subprocess.run([sys.executable, "-m", "hermes_cli.main", "assistant", "doctor", "--json"],
+                            cwd=tmp_path, env=cli_env, text=True, capture_output=True, timeout=30)
+    assert result.returncode == 1, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert next(row for row in payload["checks"] if row["id"] == "capability")["status"] == "fail"

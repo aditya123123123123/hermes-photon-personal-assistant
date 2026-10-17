@@ -13,6 +13,7 @@ from .memory_ranking import rank_memories
 
 
 PHOTON_PERSONAL_ASSISTANT_PROMPT = """Personal-assistant mode for this authorized one-to-one iMessage conversation.
+Load `photon-personal-assistant:texting-assistant` with `skill_view` for generic texting style.
 Use the existing conversation history and memory when relevant; do not invent remembered facts. Keep replies concise and natural for iMessage: answer first, skip greetings and recaps, and use short paragraphs or a small list only when useful. Distinguish tentative ideas or plans from accepted commitments. Treat a commitment as accepted only when the user clearly agrees; do not present a suggestion as decided or claim an action happened without confirmation and evidence. Ask one focused question when clarification is needed. Never expose private recipient identifiers unless asked.
 
 Durable follow-through (ordinary terminal, current Photon DM only):

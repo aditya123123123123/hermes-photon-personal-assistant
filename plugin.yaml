@@ -3,6 +3,7 @@ label: Photon Personal Assistant
 version: 0.1.0
 manifest_version: 2
 api_version: 1
+requires_hermes: ">=0.22.2"
 description: Natural iMessage bubbles, model-chosen reactions and approval-gated follow-through.
 author: Photon Personal Assistant contributors
 requires_plugins:
