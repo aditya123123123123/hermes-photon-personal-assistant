@@ -2,7 +2,7 @@
 
 A standalone Hermes user plugin for natural iMessage replies and approval-gated personal follow-through, inspired by texting-first assistants. MIT licensed; no core files are edited or monkeypatched by the plugin.
 
-**Compatibility:** requires Hermes >=0.22.2; tested against that release and upstream commit `963b4e7d5029e8520657a6bf3c8fecb883b7d648`, Python 3.14.7, macOS. Re-run the contracts when updating Hermes. This checkout has not been published or admitted to the catalog.
+**Compatibility:** requires Hermes >=0.22.2; tested against that release and upstream commit `963b4e7d5029e8520657a6bf3c8fecb883b7d648`, Python 3.14.7, macOS. Re-run the contracts when updating Hermes. Not listed in the Hermes plugin catalog.
 
 Start with the step-by-step [setup guide](SETUP.md), then run `hermes assistant doctor`. Review [disclosures and catalog eligibility](DISCLOSURES.md) before installing.
 
