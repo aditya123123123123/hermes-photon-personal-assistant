@@ -1,0 +1,17 @@
+name: photon-personal-assistant
+label: Photon Personal Assistant
+version: 0.1.0
+manifest_version: 2
+api_version: 1
+description: Natural iMessage bubbles, model-chosen reactions and approval-gated follow-through.
+author: Photon Personal Assistant contributors
+requires_plugins:
+  - id: photon-platform
+provides_tools: [photon_react]
+provides_hooks: [pre_llm_call]
+capabilities: [gateway.platform_actions]
+config_schema:
+  enabled: {type: bool, default: true, description: Enable assistant guidance and recall in authorized DMs.}
+  bubble_max_chars: {type: int, default: 600, description: Soft bubble limit; zero disables splitting.}
+  owner: {type: str, default: auto, description: 'Follow-through owner: auto, native, legacy or disabled.'}
+  calendar: {type: dict, default: {}, description: Trusted read-only calendar policy and exact DM grants.}
